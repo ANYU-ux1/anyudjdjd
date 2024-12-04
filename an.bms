@@ -1,0 +1,199 @@
+
+
+math NO_TAIL_INFO = 0   
+quickbmsver "0.11"
+
+math TOC_FILE = 0
+
+# set your AES_KEY here as text or C string ("\x11\x22...") or umodel hex (0x1122...)
+set AES_KEY binary ""
+putarray 10 -1 ""
+math AES_KEY_IS_SET = 0
+
+math ALTERNATIVE_MODE = 0
+math BASE_PATH_INCLUDED = 1
+math DIR_FLAG = 1
+math CHUNK_OFFSET_ABSOLUTE = -1 # default, enabled
+
+goto -0x2C # Chinese PUBG (new)
+get MAGIC long
+get VERSION long
+endian guess VERSION
+if VERSION != 8
+打印“此包与脚本不兼容！”
+清洁出口
+endif
+
+findloc偏移量二进制" x2E x2E x2F x2E x2F x2E x2F " 0 " " 0
+如果偏移= " "
+findloc OFFSET binary " x57 x57 x56 x57 x56 x57 x57 x56 " 0 " " 0
+如果偏移= " "
+打印“此包与脚本不兼容！”
+清洁出口
+其他
+数学加密= 1
+filexor 0x79
+endif
+其他
+数学加密= 0
+endif
+数学偏移量- 4
+转到偏移量
+调用函数GET_BASE_PATH 1
+
+数学摘录= 0
+获取长文件
+filexor " " " "
+对于i = 0 <文件
+如果加密= 1
+filexor 0x79
+endif
+调用函数GET_ENTRY 1
+putarray 5 i偏移
+接下来我
+
+数学摘录= 1
+获取条目龙龙
+如果加密= 1
+获取虚拟字节
+endif
+保存位置偏移量
+获取尺寸大小
+数学大小-偏移量
+日志MEMORY_FILE5偏移量大小
+数学目录_文件5 = -5
+
+调用函数获取名称并提取1
+
+
+startfunction GET_ENTRY
+getdstring哈希20
+获取偏移量longlong
+获取尺寸龙龙
+长话短说
+get ZSIZE龙龙
+	getdstring DUMMY2 21
+
+	math CHUNKS = 0
+	math ENCRYPTED = 0
+	if ZIP != 0
+		get CHUNKS long
+		for x = 0 < CHUNKS
+			get CHUNK_OFFSET longlong
+			get CHUNK_END_OFFSET longlong
+			putarray 0 x CHUNK_OFFSET
+			putarray 1 x CHUNK_END_OFFSET
+		next x
+	endif
+	get CHUNK_SIZE long
+	get ENCRYPTED byte	
+	if ENCRYPTED = 1
+		filexor 0x79
+	endif	
+
+	savepos TMP_OFF
+	if EXTRACT == 1
+	if CHUNKS > 0
+		log NAME 0 0
+		append
+		math TMP_SIZE = SIZE
+		for x = 0 < CHUNKS
+			getarray CHUNK_OFFSET 0 x
+			getarray CHUNK_END_OFFSET 1 x
+			math CHUNK_ZSIZE = CHUNK_END_OFFSET
+			math CHUNK_ZSIZE - CHUNK_OFFSET
+			math CHUNK_XSIZE = CHUNK_ZSIZE
+
+			if TMP_SIZE u< CHUNK_SIZE
+				math CHUNK_SIZE = TMP_SIZE
+			endif
+			if ZIP == 0
+				log NAME CHUNK_OFFSET CHUNK_SIZE 0
+			else
+				clog NAME CHUNK_OFFSET CHUNK_ZSIZE CHUNK_SIZE 0
+			endif
+			math TMP_SIZE - CHUNK_SIZE
+		next x
+		append
+	else
+		# the file offset points to an entry containing
+		# the "same" OFFSET ZSIZE SIZE ZIP HASH ZERO fields,
+		# just an additional backup... so let's skip them
+		math BASE_OFFSET = TMP_OFF
+
+		if ZIP == 0
+			log NAME BASE_OFFSET SIZE 0
+		else
+			clog NAME BASE_OFFSET ZSIZE SIZE 0
+		endif
+	endif
+	endif
+	filexor "" ""
+endfunction
+
+startfunction GET_BASE_PATH
+获取名称长
+	getdstring BASE_PATH NAMESZ
+	if NAMESZ != 0x0A && NAMESZ < 0xFF
+		string BASE_PATH | "../../../"
+		math BASE_PATH_INCLUDED = 0
+	endif
+endfunction
+
+startfunction CHECK_UNICODE
+	if NAMESZ >= 0
+getdstring结果名称TOC _ FILE5
+其他
+数学名称n名称
+数学名称SZ * 2
+getdstring结果名称TOC _ FILE5
+设置结果unicode结果
+关于endif
+Endfunction
+
+startfunction获取名称并提取
+如果目录标志= 1
+get DIR_COUNT longlong TOC_FILE5
+数学目录_标志= 0
+endif
+	
+如果目录计数= 0
+数学目录_标志= 1
+调用函数获取名称并提取1
+其他
+数学目录计数- 1
+获取NAMESZ signed_long TOC_FILE5
+调用函数CHECK_UNICODE 1
+字符串目录名=结果
+获取目录文件longlong目录文件5
+如果目录文件= 0
+调用函数获取名称并提取1
+其他
+对于y = 0 <目录文件
+数学摘录= 1
+				get NAMESZ signed_long TOC_FILE5
+				if NAMESZ > 0
+获取名称字符串TOC_FILE5
+其他
+调用函数CHECK_UNICODE 1
+字符串名称=结果
+endif
+字符串名称p "%s%s "目录名称
+如果基本路径包含== 0
+字符串名称p "%s%s "基本路径名称
+endif
+							
+获取条目长目录_文件5
+盖塔雷偏移5条目
+转到偏移量
+调用函数获取_条目1
+				
+数学文件- 1
+如果文件= 0
+清洁出口
+endif
+下一年
+调用函数获取名称并提取1
+endif
+endif
+结束函数
