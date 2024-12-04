@@ -1,31 +1,31 @@
-# ZSTD scanner
-# https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md
+# ZSTD扫描仪
+# https://github . com/Facebook/zstd/blob/dev/doc/zstd _ compression _ format . MD
 
-get FILES asize
+将文件分类
 comtype zstd
-math runtimed = 0
-math filecount = 0
-for I = 0 < FILES
-    if runtimed == filecount
-       string namez = ""
-       math filecount + 1
-    endif
+数学运行时间= 0
+数学文件计数= 0
+对于I = 0 <文件
+if runtimed = = filecount
+字符串名称= " "
+数学文件计数+ 1
+endif
  
-    string name = namez
-    string namesz p "%08d" i
-    string name + namesz
-    string name + ".dat"
-    findloc OFFSET binary "\x28\xb5\x2f\xfd"
-    goto OFFSET
+字符串名称= namez
+字符串名称sz p "%08d" i
+字符串名称+名称z
+字符串名称+"。dat "
+findloc偏移二进制" x28 xb5 x2f xfd "
+转到偏移量
 
-    idstring "\x28\xb5\x2f\xfd"
-    savepos b1
+idstring " x28 xb5 x2f xfd "
+savepos b1
 
-    getbits Dictionary_ID_flag 2
-    savepos b1
+getbits字典_ ID _标志2
+savepos b1
 
-    getbits Content_Checksum_flag 1
-    savepos b1
+getbits内容_校验和_标志1
+savepos b1
 
     getbits Reserved_bit 1
     savepos b1
